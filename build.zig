@@ -110,6 +110,19 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(host_test);
 
+    const sandbox_test = b.addExecutable(.{
+        .name = "sandbox_test",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("test_programs/sandbox_test.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "zigriscv", .module = mod },
+            },
+        }),
+    });
+    b.installArtifact(sandbox_test);
+
     const mod_tests = b.addTest(.{ .root_module = mod });
     const run_mod_tests = b.addRunArtifact(mod_tests);
     const test_step = b.step("test", "Run tests");
