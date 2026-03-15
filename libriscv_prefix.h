@@ -3,3 +3,4 @@
    which clashes. Push/undef it before including libriscv.h. */
 #pragma push_macro("stdout")
 #undef stdout
+#pragma pop_macro("stdout")

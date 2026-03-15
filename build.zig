@@ -1,7 +1,5 @@
 const std = @import("std");
 
-const libriscv_lib_path = "../libriscv/lib/";
-
 const core_sources: []const []const u8 = &.{
     "libriscv/cpu.cpp",
     "libriscv/debug.cpp",
@@ -29,6 +27,7 @@ const core_sources: []const []const u8 = &.{
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const libriscv_dep = b.dependency("libriscv", .{});
 
     const libriscv_mod = b.createModule(.{
         .target = target,
@@ -36,7 +35,7 @@ pub fn build(b: *std.Build) void {
     });
 
     libriscv_mod.addCSourceFiles(.{
-        .root = b.path(libriscv_lib_path),
+        .root = libriscv_dep.path("lib/"),
         .files = core_sources,
         .flags = &.{
             "-std=c++20",
@@ -54,12 +53,14 @@ pub fn build(b: *std.Build) void {
         },
     });
 
-    libriscv_mod.addIncludePath(b.path(libriscv_lib_path));
+    libriscv_mod.addIncludePath(libriscv_dep.path("lib/"));
     libriscv_mod.addIncludePath(b.path(".")); // libriscv_settings.h
-    libriscv_mod.addIncludePath(b.path("../libriscv/c")); // libriscv.h
+    libriscv_mod.addIncludePath(libriscv_dep.path("c")); // libriscv.h
     libriscv_mod.linkSystemLibrary("c++", .{});
-    libriscv_mod.linkFramework("Security", .{});
-    libriscv_mod.linkFramework("Foundation", .{});
+    if (target.result.os.tag == .macos) {
+        libriscv_mod.linkFramework("Security", .{});
+        libriscv_mod.linkFramework("Foundation", .{});
+    }
 
     const libriscv = b.addLibrary(.{
         .name = "riscv",
@@ -71,7 +72,7 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/root.zig"),
         .target = target,
     });
-    mod.addIncludePath(b.path("../libriscv/c"));
+    mod.addIncludePath(libriscv_dep.path("c"));
     mod.linkLibrary(libriscv);
 
     const exe = b.addExecutable(.{

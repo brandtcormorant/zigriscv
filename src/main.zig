@@ -12,9 +12,16 @@ pub fn main(init: std.process.Init) !void {
     }
 
     const cwd: std.Io.Dir = .cwd();
-    const elf_data = try cwd.readFileAllocOptions(io, args[1], arena, .unlimited, @enumFromInt(3), null);
+    // @enumFromInt(3) = page alignment (2^3 = 8 bytes) for ELF file reading
+    const elf_data = cwd.readFileAllocOptions(io, args[1], arena, .unlimited, @enumFromInt(3), null) catch |err| {
+        std.debug.print("failed to read ELF file: {}\n", .{err});
+        return;
+    };
 
-    const machine = try riscv.Machine.init(elf_data, .{});
+    const machine = riscv.Machine.init(elf_data, .{}) catch |err| {
+        std.debug.print("failed to initialize machine: {}\n", .{err});
+        return;
+    };
     defer machine.deinit();
 
     machine.run(0) catch |err| {

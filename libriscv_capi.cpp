@@ -6,7 +6,7 @@
 #undef stdout
 #endif
 
-#include "../libriscv/c/libriscv.cpp"
+#include "libriscv.cpp"
 
 #ifdef __APPLE__
 #pragma pop_macro("stdout")

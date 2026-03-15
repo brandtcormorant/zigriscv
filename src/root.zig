@@ -105,3 +105,11 @@ test "libriscv linked" {
     c.libriscv_set_defaults(&opts);
     try std.testing.expect(opts.max_memory > 0);
 }
+
+test "exit42 integration" {
+    const elf_data = @embedFile("../test_programs/exit42");
+    const machine = try Machine.init(elf_data, .{});
+    defer machine.deinit();
+    try machine.run(0);
+    try std.testing.expectEqual(@as(i64, 42), machine.returnValue());
+}
