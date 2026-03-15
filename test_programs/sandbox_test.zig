@@ -140,7 +140,7 @@ pub fn main(init: std.process.Init) !void {
     std.debug.print("eval(\"let x = 10\\nx * 4 + 2\") = \"{s}\"\n", .{r3});
 
     // Test 4: function definition and call
-    const r4 = eval(elf_data, "let double = fn(n) n * 2 end\ndouble(21)") catch |err| {
+    const r4 = eval(elf_data, "let double = fn(n) { n * 2 }\ndouble(21)") catch |err| {
         std.debug.print("test 4 failed: {}\n", .{err});
         return;
     };
