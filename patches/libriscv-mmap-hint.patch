@@ -1,0 +1,30 @@
+--- a/lib/libriscv/linux/syscalls_mman.cpp
++++ b/lib/libriscv/linux/syscalls_mman.cpp
+@@ -133,6 +133,20 @@
+ 			} else {
+ 				result = addr_g;
+ 			}
++		} else if ((flags & LINUX_MAP_FIXED) == 0) {
++			// Non-fixed hint address in or above mmap arena.
++			// Treat as a hint: ignore addr_g and use nextfree.
++			// This handles Zig's page_allocator which passes a
++			// non-null hint from previous mmap results.
++			auto range = machine.memory.mmap_cache().find(length);
++			if (range.empty()) {
++				result = nextfree;
++				nextfree += length;
++			}
++			else
++			{
++				result = range.addr;
++			}
+ 		} else {
+ 			MMAP_HAS_FAILED();
+ 		}
+
+This patch applies to libriscv's lib/libriscv/linux/syscalls_mman.cpp.
+
+The problem: mmap with a non-null, non-MAP_FIXED hint address (as used by
+Zig's page_allocator on 2nd+ allocations) fell through all cases to
+MMAP_HAS_FAILED. The fix treats non-fixed hints the same as addr=0:
+check the mmap cache first, then fall back to nextfree.
