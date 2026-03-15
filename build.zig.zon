@@ -5,7 +5,7 @@
     .minimum_zig_version = "0.16.0-dev.2877+627f03af9",
     .dependencies = .{
         .libriscv = .{
-            .url = "https://github.com/fwsGonzo/libriscv/archive/refs/heads/master.tar.gz",
+            .url = "https://github.com/brandtcormorant/libriscv/archive/5db062e8af105e637cc6d490dcb2c1af59716860.tar.gz",
             .hash = "N-V-__8AAGtFawDvTGFo5oq1mcRDJk6AarsqpeLziTs9Je4Y",
         },
     },
