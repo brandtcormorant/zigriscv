@@ -97,6 +97,19 @@ pub fn build(b: *std.Build) void {
         run_cmd.addArgs(args);
     }
 
+    const host_test = b.addExecutable(.{
+        .name = "host_test",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("test_programs/host_test.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "zigriscv", .module = mod },
+            },
+        }),
+    });
+    b.installArtifact(host_test);
+
     const mod_tests = b.addTest(.{ .root_module = mod });
     const run_mod_tests = b.addRunArtifact(mod_tests);
     const test_step = b.step("test", "Run tests");
