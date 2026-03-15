@@ -91,7 +91,7 @@ pub const Options = struct {
     strict_sandbox: bool = true,
 
     fn toCOptions(self: Options) c.RISCVOptions {
-        var opts: c.RISCVOptions = undefined;
+        var opts: c.RISCVOptions = std.mem.zeroes(c.RISCVOptions);
         c.libriscv_set_defaults(&opts);
         opts.max_memory = self.max_memory;
         opts.stack_size = self.stack_size;
