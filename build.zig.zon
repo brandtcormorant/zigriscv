@@ -2,7 +2,7 @@
     .name = .zigriscv,
     .version = "0.1.0",
     .fingerprint = 0x375055a73c38d135,
-    .minimum_zig_version = "0.16.0-dev.2877+627f03af9",
+    .minimum_zig_version = "0.16.0-dev.3012+54b34842s",
     .dependencies = .{
         .libriscv = .{
             .url = "https://github.com/brandtcormorant/libriscv/archive/5db062e8af105e637cc6d490dcb2c1af59716860.tar.gz",
