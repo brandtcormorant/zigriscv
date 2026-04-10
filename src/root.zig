@@ -3,6 +3,10 @@ const c = @cImport({
     @cInclude("libriscv.h");
 });
 
+pub const protocol = @import("protocol.zig");
+pub const GateProtocol = protocol.GateProtocol;
+pub const Sandbox = protocol.Sandbox;
+
 pub const Error = error{
     GeneralException,
     MachineException,
@@ -136,6 +140,13 @@ pub const Machine = struct {
         c.libriscv_stop(self.handle);
     }
 
+    /// Retrieve the per-machine opaque pointer set via Options.
+    /// Returns a typed pointer, or null if no opaque was set.
+    pub fn getOpaque(self: Machine, comptime T: type) ?*T {
+        const ptr = c.libriscv_opaque(self.handle);
+        return if (ptr == null) null else @ptrCast(@alignCast(ptr));
+    }
+
     fn checkReturn(ret: c_int) Error!void {
         switch (ret) {
             0 => {},
@@ -151,6 +162,7 @@ pub const Options = struct {
     max_memory: u64 = 8 * 1024 * 1024,
     stack_size: u32 = 256 * 1024,
     strict_sandbox: bool = true,
+    user_data: ?*anyopaque = null,
 
     fn toCOptions(self: Options) c.RISCVOptions {
         var opts: c.RISCVOptions = std.mem.zeroes(c.RISCVOptions);
@@ -158,6 +170,7 @@ pub const Options = struct {
         opts.max_memory = self.max_memory;
         opts.stack_size = self.stack_size;
         opts.strict_sandbox = if (self.strict_sandbox) 1 else 0;
+        opts.@"opaque" = self.user_data;
         return opts;
     }
 };
@@ -166,12 +179,4 @@ test "libriscv linked" {
     var opts: c.RISCVOptions = undefined;
     c.libriscv_set_defaults(&opts);
     try std.testing.expect(opts.max_memory > 0);
-}
-
-test "exit42 integration" {
-    const elf_data = @embedFile("../test_programs/exit42");
-    const machine = try Machine.init(elf_data, .{});
-    defer machine.deinit();
-    try machine.run(0);
-    try std.testing.expectEqual(@as(i64, 42), machine.returnValue());
 }

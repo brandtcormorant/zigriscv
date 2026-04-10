@@ -41,6 +41,7 @@ pub fn build(b: *std.Build) void {
             "-std=c++20",
             "-Wall",
             "-Wextra",
+            // "-fno-sanitize=signed-integer-overflow",
         },
     });
 
@@ -74,6 +75,17 @@ pub fn build(b: *std.Build) void {
     });
     mod.addIncludePath(libriscv_dep.path("c"));
     mod.linkLibrary(libriscv);
+
+    // Guest module: pure Zig ecall shims + protocol, no C dependencies.
+    // Importable by riscv64 guest builds.
+    _ = b.addModule("zigriscv-guest", .{
+        .root_source_file = b.path("src/guest.zig"),
+    });
+
+    // Protocol module: GateProtocol generic, importable by both guest and host.
+    _ = b.addModule("zigriscv-protocol", .{
+        .root_source_file = b.path("src/protocol.zig"),
+    });
 
     const exe = b.addExecutable(.{
         .name = "zigriscv",
